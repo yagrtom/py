@@ -58,7 +58,6 @@ freq_range = range(1, 11)
 
 
 
-r = D/2
 
 
 rcs_calculator = RCS(freq_range, r)

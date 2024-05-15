@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 A = 1.25313
 n = 10000
@@ -21,7 +22,9 @@ print("The value is entered")
 
 print("Write it to a file")
 result = {"data":data}
-with open("result.json", "w") as file:
+if not os.path.isdir("result"):
+     os.mkdir("result")
+with open('result/result.json', "w") as file:
     json.dump(result, file, indent=4)
 print("File test.json has been created successfully!")
 
@@ -38,3 +41,6 @@ x = np.linspace(-100, 100, n)
 y = 0.5 + (((np.cos(np.sin((x**2) - (A**2))))**2) - 0.5)/( 1 + 0.001*((x**2) + (A**2)))
 ax.plot(x, y)
 plt.show()
+
+
+

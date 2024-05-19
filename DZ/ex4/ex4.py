@@ -1,6 +1,7 @@
 import json
 from scipy.special import jn, yn, hankel2
 import matplotlib.pyplot as plt
+import math
 
 
 #Чтение из файла
@@ -32,7 +33,7 @@ class RCS:
                 a_n = jn(n, k*self.r) / hankel2(n, k*self.r)
                 b_n = (k*self.r*jn(n-1, k*self.r) - n*jn(n, k*self.r)) / (k*self.r*hankel2(n-1, k*self.r) - n*hankel2(n, k*self.r))
                 rcs += (-1)**n * (n + 0.5) * (b_n - a_n)
-            rcs = (lambda_range[0]**2 / 3.14159) * abs(rcs)**2
+            rcs = (lambda_range[0]**2 / math.pi) * abs(rcs)**2
             data.append({"freq": freq, "lambda": lambda_range[0], "rcs": rcs})
         return data
 
@@ -50,11 +51,12 @@ class Output:
         plt.plot(freq, rcs)
         plt.xlabel('Frequency')
         plt.ylabel('RCS')
-        plt.title('RCS vs Frequency')
+        plt.title('RCS from frequency')
         plt.grid()
         plt.show()
 
 freq_range = range(1, 11)
+
 
 
 

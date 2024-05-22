@@ -24,12 +24,12 @@ plt.ylabel('y')
 graf_from_json.set_xlim((-5, 5))
 plt.title('Graph of y = f(x)')
 def set_yticks_step():
-    if(len(sys.argv) == 4):
-        if (sys.argv[2] == "Y"):
-            step2 = [int(sys.argv[3]), int(sys.argv[4])]
+    if(len(sys.argv) > 2):
+        if ((sys.argv[2]) == "Y"):
+            step = float(sys.argv[3])
     else:
-        step2 = [-2, 2]
-    plt.yticks(step2, rotation ='horizontal')
+        step = 1
+    plt.yticks(np.arange(min(y_values), max(y_values)+1, step))
 
 set_yticks_step()
 plt.show()

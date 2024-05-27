@@ -1,7 +1,8 @@
 import json
-from scipy.special import jn, yn, hankel2
+import scipy.constants as constants
+import scipy.special as special
+import numpy as np
 import matplotlib.pyplot as plt
-import math
 
 
 #Чтение из файла
@@ -16,26 +17,46 @@ for elem in tree.iter('variant'):
         D = float(elem.attrib['D'])
         fmin = float(elem.attrib['fmin'].replace('e9', '')) * 1e9
         fmax = float(elem.attrib['fmax'].replace('e9', '')) * 1e9
-r = D/2
 
-class RCS:
-    def __init__(self, freq_range, r):
-        self.freq_range = freq_range
-        self.r = r
+freq= range(int(fmin) , int(fmax), 10000000)
 
-    def calculate_rcs(self):
-        lambda_range = [1/fmax, 1/fmin]
-        data = []
-        for freq in self.freq_range:
-            k = 2 * 3.14159 * freq
-            rcs = 0
-            for n in range(1, 20):
-                a_n = jn(n, k*self.r) / hankel2(n, k*self.r)
-                b_n = (k*self.r*jn(n-1, k*self.r) - n*jn(n, k*self.r)) / (k*self.r*hankel2(n-1, k*self.r) - n*hankel2(n, k*self.r))
-                rcs += (-1)**n * (n + 0.5) * (b_n - a_n)
-            rcs = (lambda_range[0]**2 / math.pi) * abs(rcs)**2
-            data.append({"freq": freq, "lambda": lambda_range[0], "rcs": rcs})
-        return data
+class EDA:
+    def __init__(self, D, freq):
+        self.r = D/2
+        self.wave_length = 0
+        self.k = 0
+        self._freq_range_ = freq
+    def a_n(self, n):
+        numerator = np.longdouble(special.spherical_jn(n, self.k * self.r))
+        divider = self.h_n(n, self.k * self.r)
+        return np.divide(numerator, divider)
+
+    def b_n(self, n):
+        numerator = self.k * self.r * np.longdouble(special.spherical_jn(n - 1, self.k * self.r)) - n * np.longdouble(special.spherical_jn(n, self.k * self.r))
+        divider = self.k * self.r * self.h_n(n - 1, self.k * self.r) - n * self.h_n(n, self.k * self.r)
+        return np.divide(numerator, divider) # numpy делитель
+    def h_n(self, n, arg):
+        return np.clongdouble(special.spherical_jn(n, arg) + 1j*special.spherical_yn(n, arg))
+    
+    def calculEDA(self):
+        coef = self.wave_length**2 / constants.pi
+        partForml = 0
+        # оператор суммы в формуле c верхним пределом 50
+        for n in range(1, 50):
+            partForml += (-1)**n * (n + 0.5) * (self.b_n(n) - self.a_n(n))
+        result = coef * abs(partForml) ** 2
+        return result
+    
+    def GetData(self):
+        self.data = []
+        for freq in self._freq_range_:
+            # обновляем длину волны и волновое число
+            self.wave_length = np.longdouble(constants.speed_of_light / freq)
+            self.k = np.longdouble(2 * constants.pi / self.wave_length)
+            # получаем значение ЭПР для новых параметров
+            temp_eda = self.calculEDA()
+            self.data.append({"freq": float(freq), "lambda": float(self.wave_length), "rcs": float(temp_eda)})
+        return self.data
 
 class Output:
     def __init__(self, data):
@@ -54,17 +75,9 @@ class Output:
         plt.title('RCS from frequency')
         plt.grid()
         plt.show()
-
-freq_range = range(1, 11)
-
-
-
-
-
-
-rcs_calculator = RCS(freq_range, r)
-data = rcs_calculator.calculate_rcs()
-
+        
+calculator = EDA(D, freq)
+data = calculator.GetData()
 output = Output(data)
 output.save_to_json('result.json')
 output.plot_data()

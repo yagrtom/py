@@ -18,7 +18,7 @@ for elem in tree.iter('variant'):
         fmin = float(elem.attrib['fmin'].replace('e9', '')) * 1e9
         fmax = float(elem.attrib['fmax'].replace('e9', '')) * 1e9
 
-freq= range(int(fmin) , int(fmax), 10000000)
+freq= range(int(fmin) , int(fmax), 100000000)
 
 class EDA:
     def __init__(self, D, freq):
@@ -41,7 +41,6 @@ class EDA:
     def calculEDA(self):
         coef = self.wave_length**2 / constants.pi
         partForml = 0
-        # оператор суммы в формуле c верхним пределом 50
         for n in range(1, 50):
             partForml += (-1)**n * (n + 0.5) * (self.b_n(n) - self.a_n(n))
         result = coef * abs(partForml) ** 2
@@ -50,10 +49,8 @@ class EDA:
     def GetData(self):
         self.data = []
         for freq in self._freq_range_:
-            # обновляем длину волны и волновое число
             self.wave_length = np.longdouble(constants.speed_of_light / freq)
             self.k = np.longdouble(2 * constants.pi / self.wave_length)
-            # получаем значение ЭПР для новых параметров
             temp_eda = self.calculEDA()
             self.data.append({"freq": float(freq), "lambda": float(self.wave_length), "rcs": float(temp_eda)})
         return self.data

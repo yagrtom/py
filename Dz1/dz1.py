@@ -76,18 +76,18 @@ if __name__ == '__main__':
     PecX = maxSize - 1
 
     # Положение источника в отсчетах
-    sourcePos_m = 1.5
+    sourcePos_m = 1
     sourcePos = sampler_x.sample(sourcePos_m)
     
     # Время расчета в отсчетах
-    maxTime_s = 20e-9
+    maxTime_s = 60e-9
     maxTime = sampler_t.sample(maxTime_s)
     # Параметры Вейвлета Рикера
     Np = 55.0
     Md = 2.5
 
     # Датчики для регистрации поля
-    probepos_m = 2.5
+    probepos_m = 2
     probesPos = [sampler_x.sample(probepos_m)]
     probes = [tools.Probe(pos, maxTime) for pos in probesPos]
 
@@ -111,6 +111,14 @@ if __name__ == '__main__':
     display_ymin = -2.1
     display_ymax = 2.1
 
+    # Расчет коэффициентов для граничных условий для ABC первой степени 
+    tempLeft = Sc / np.sqrt(mu[0] * eps[0])
+    koeffABCLeft = (tempLeft - 1) / (tempLeft + 1)
+
+    # Ez[1] в предыдущий момент времени для ABC первой степени
+    oldEzLeft = Ez[1]
+
+
     # Создание экземпляра класса для отображения
     # распределения поля в пространстве
     display = tools.AnimateFieldDisplay(dx, dt, maxSize,
@@ -129,9 +137,6 @@ if __name__ == '__main__':
         # Total Field / Scattered Field
         Hy[sourcePos - 1] -= Sc / (W0 * mu[sourcePos - 1]) * source.getE(0, q)
 
-        Ez[0] = Ez[1]
-        Ez[-1] = Ez[-2]
-
         # Расчет компоненты поля E
         Ez[1:-1] = Ez[1:-1] + (Hy[1:] - Hy[:-1]) * Sc * W0 / eps[1:-1]
 
@@ -139,8 +144,14 @@ if __name__ == '__main__':
         # Total Field / Scattered Field
         Ez[sourcePos] += (Sc / (np.sqrt(eps[sourcePos] * mu[sourcePos])) *
                           source.getE(-0.5, q + 0.5))
-
+        
+        # Граничные условия ABC первой степени
+        Ez[0] = oldEzLeft + koeffABCLeft * (Ez[1] - Ez[0])
+        oldEzLeft = Ez[1]
+        
+        #Граничные условия PEC
         Ez[PecX] = 0.0
+        
         # Регистрация поля в датчиках
         for probe in probes:
             probe.addData(Ez, Hy)

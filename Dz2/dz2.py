@@ -77,12 +77,12 @@ if __name__ == '__main__':
     Sc = 1.0
 
     # Размер области моделирования в м
-    maxSize_m = 1.6
+    maxSize_m = 1.4
 
     # Время расчета в секундах
     # for test 1e-9
     # for model 4e-8 
-    maxTime_s = 5e-9
+    maxTime_s = 15e-9
 
     # Положение источника в м
     sourcePos_m = 0.1
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     # Параметры слоев
 
     # Скорость обновления графика поля
-    speed_refresh = 500
+    speed_refresh = 1000
 
     # Переход к дискретным отсчетам
     # Дискрет по времени
@@ -228,10 +228,11 @@ if __name__ == '__main__':
     display.stop()
 
     # Отображение сигнала, сохраненного в пробнике
-    tools.showProbeAll(signal_probe, probes, dx, dt, -2.1, 2.1)
     
-    #tools.showProbeFalRefSignal(signal_probe, probes[0], dx, dt, -2.1, 2.1)
+    #tools.showProbeAll(signal_probe, probes, dx, dt, -2.1, 2.1)
     
-    #tools.showProbeFalRefSpectrum(signal_probe, probes[0], dx, dt, -2.1, 2.1)
+    tools.showProbeFalRefSignalMy(signal_probe, probes[0], dx, dt, -2.1, 2.1)
     
+    tools.showProbeFalRefSpectrumMy(signal_probe, probes[0], dx, dt, -2.1, 2.1)
+
     tools.showProbeKoeReflectedOfFrequency(signal_probe, probes[0], dx, dt, -2.1, 2.1)

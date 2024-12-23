@@ -253,14 +253,13 @@ def showProbeSpectrum(probes: List[Probe],
         fft = numpy.abs(numpy.fft.fft(probe.E))
         #len(probe.E)
         fftfreq = numpy.fft.fftfreq(len(probe.E), dt)
-
+        fft = fft/max(fft)
         # Настройка внешнего вида графиков
 
-        #ax.set_xlim(0, numpy.max(fftfreq))
-        ax.set_xlim(numpy.min(fftfreq) / 3, numpy.max(fftfreq) / 3)
+        ax.set_xlim(0, 3e9)
         ax.set_ylim(numpy.min(fft), numpy.max(fft))
         ax.set_xlabel('f, Hz')
-        ax.set_ylabel('Ez, В/Гц')
+        ax.set_ylabel('Ez, В*c')
         ax.grid()
         
         maxval = numpy.max(probe.E)

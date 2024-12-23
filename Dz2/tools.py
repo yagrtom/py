@@ -362,7 +362,6 @@ def showProbeFalRefSignal(probeFallSignal: Probe, probeRefSignal: Probe, dx: flo
 
     pylab.show()
     
-# опять костылим что бы для отчета сделать большие графики
 def showProbeFalRefSpectrum(probeFallSignal: Probe, probeRefSignal: Probe, dx: float, dt: float,
                       minYSize: float, maxYSize: float):
     '''
@@ -486,5 +485,95 @@ def showProbeKoeReflectedOfFrequency(probeFallSignal: Probe, probeRefSignal: Pro
     
 
     ax.plot(fftfreq, Gamma)
+
+    pylab.show()
+
+
+def showProbeFalRefSignalMy(probeFallSignal: Probe, probeRefSignal: Probe, dx: float, dt: float,
+    minYSize: float, maxYSize: float):
+    '''
+    Сформировать график по выбранным датчикам.
+
+    scss
+    Copy code
+    probes - список экземпляров класса Probe.
+    minYSize, maxYSize - интервал отображения графика по оси Y.
+    '''
+    # Создание окна с графиками
+    fig, ax = pylab.subplots(figsize=(10, 6.5))
+    fig.suptitle('Сигналы')
+
+    maxval = 0
+    minval = 0
+
+    probes = [probeFallSignal, probeRefSignal]
+
+    # Вывод сигналов на одном графике
+    for probe in probes:
+        # Настройка внешнего вида графиков
+        ax.set_xlim(0, len(probe.E) * dt * 1e9)
+        ax.set_ylim(minYSize, maxYSize)
+        ax.set_xlabel('t, нс')
+        ax.set_ylabel('Ez, В/м')
+        ax.grid()
+
+        time_list = np.arange(len(probe.E)) * dt * 1e9
+
+        maxval = np.max(probe.E)
+        minval = np.min(probe.E)
+
+        legend = 'Датчик: x = {pos:.5f} m; U Max = {maxval:.5f}; U Min = {minval:.5f}'.format(
+            pos=probe.position * dx, maxval=maxval, minval=minval)
+    
+        linestyle = '--' if probe == probeRefSignal else '-'  # Changing line style for the second probe
+        ax.plot(time_list, probe.E, linestyle=linestyle, label=legend)
+
+    # Создание и отображение легенды на графике
+    legend_obj = ax.legend()
+    legend_obj.set_draggable(True)
+
+    pylab.show()
+    
+def showProbeFalRefSpectrumMy(probeFallSignal: Probe, probeRefSignal: Probe, dx: float, dt: float,
+                                minYSize: float, maxYSize: float):
+    '''
+    Сформировать график по выбранным датчикам.
+
+    scss
+    Copy code
+    probes - список экземпляров класса Probe.
+    minYSize, maxYSize - интервал отображения графика по оси Y.
+    '''
+
+    # Создание окна с графиками
+    fig, ax = pylab.subplots(figsize=(10, 6.5), nrows=1, ncols=1)
+    ax.set_title('Спектры сигналов')
+
+    fftFall = np.abs(np.fft.fft(probeFallSignal.E))
+    fftRef = np.abs(np.fft.fft(probeRefSignal.E))
+    fftfreq = np.fft.fftfreq(len(probeFallSignal.E), dt)
+
+    # Настройка внешнего вида графика
+    ax.set_xlim(np.min(fftfreq) / 300, np.max(fftfreq) / 300)
+    ax.set_ylim(min(min(fftFall), min(fftRef)), max(max(fftFall), max(fftRef)))
+    ax.set_xlabel('f, Hz')
+    ax.set_ylabel('Ez, В/Гц')
+    ax.grid()
+
+    maxFall = np.max(probeFallSignal.E)
+    minFall = np.min(probeFallSignal.E)
+    legendFall = 'Датчик 1: x = {pos:.5f} m; F Max = {maxval:.5f}; F Min = {minval:.5f}'.format(
+        pos=probeFallSignal.position * dx, maxval=np.max(fftFall), minval=np.min(fftFall))
+    ax.plot(fftfreq, fftFall, label=legendFall)
+
+    maxRef = np.max(probeRefSignal.E)
+    minRef = np.min(probeRefSignal.E)
+    legendRef = 'Датчик 2: x = {pos:.5f} m; F Max = {maxval:.5f}; F Min = {minval:.5f}'.format(
+        pos=probeRefSignal.position * dx, maxval=np.max(fftRef), minval=np.min(fftRef))
+    ax.plot(fftfreq, fftRef, linestyle='--', label=legendRef)
+
+    # Создание и отображение легенды на графике
+    legend_obj = ax.legend(loc='best')
+    legend_obj.set_draggable(False)
 
     pylab.show()
